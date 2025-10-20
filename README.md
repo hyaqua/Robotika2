@@ -18,7 +18,7 @@ The design of this game project is divided into four main parts, first we have t
 # Design and schematics
 
 ## Design
-
+![Design](https://github.com/hyaqua/Robotika2/blob/main/Assets/design.jpg?raw=true)
 ## Schematics
 
 # Demo video
