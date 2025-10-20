@@ -220,26 +220,7 @@ ISR(TIMER1_COMPA_vect) {  // Idea is to print to lcd on each interrupt, average 
   }
 }
 
-int debug_minor = -1;
-int debug_major = -1;
-void debug(){
-
-  if(minor_mode != debug_minor || major_mode != debug_major){
-    Serial.print("min ");
-    Serial.print(minor_mode);
-    Serial.print("\t\tmaj ");
-    Serial.println(major_mode);
-
-    debug_minor = minor_mode;
-    debug_major = major_mode;
-  
-  }
-  
-}
-
 void loop() {
-
-  debug();
   switch(major_mode){
     case 0: // Welcome screen
       if(minor_mode == 0){ // Clear screen just in case
@@ -337,7 +318,7 @@ void loop() {
       }
       if(button_pressed[1]){
         if(strcmp(pot_string,"2212") == 0){ // Cheats >:)
-          number[0] = 2; number[1] = 2; number[2] = 2; number[3] = 2;
+          number[0] = 2; number[1] = 2; number[2] = 4; number[3] = 4;
         } else{
           set_major_mode(0);
           reset_lines();
@@ -348,11 +329,6 @@ void loop() {
     break;
 
     case 2: // Score screen
-      // if(is_score_empty(minor_mode)){
-      //   set_major_mode(0);
-      // } else{
-      //   put_text()
-      // }
       if(minor_mode == 0){
         scores_pos = 0;
         reset_lines();
@@ -362,12 +338,14 @@ void loop() {
         if(is_score_empty(scores_pos)){
           minor_mode = 4;
         } else{
+          reset_lines();
           put_text(line1, scores[scores_pos].name, 0);
           put_text(line1, " rounds: ", 5);
           char temp[5];
           sprintf(temp, "%d", scores[scores_pos].tries);
           put_text(line1,temp, 14);
-          sprintf(line2,"time: %d.%d", scores[scores_pos].time/10, scores[scores_pos].time%10);
+          sprintf(line2,"time: %d.%ds     ", scores[scores_pos].time/10, scores[scores_pos].time%10);
+          put_text(line2, " ", 15);
           minor_mode++;
         }
       }
@@ -384,6 +362,7 @@ void loop() {
       }
       if(minor_mode == 4){
         //               0123456789ABCDEF
+        reset_lines();
         put_text(line1, "No scores, press", 0);
         put_text(line2, "btn1/2 to exit",0);
         minor_mode++;
@@ -448,10 +427,6 @@ void loop() {
         }
       }
       if(minor_mode == 3){
-
-        Serial.println(name);
-        Serial.println(curr_round);
-        Serial.println(calc_time);
         add_score();
         write_scores();
         set_major_mode(0);
@@ -469,6 +444,7 @@ void reset_game(){
   for(int i =0; i < 4; i++){
     number[i] = random(0,10);
   }
+  Serial.println();
   playing = true;
 }
 
@@ -477,26 +453,39 @@ void check_guess(){
   correct = 0;
   wrong_place = 0;
   wrong = 0;
+
+  bool number_used[4] = {false,false,false,false};
+  bool pot_vals_used[4] = {false,false,false,false};
+
+  // First we check for correct guesses
   for(int i = 0; i < 4; i++){
     if(pot_vals[i] == number[i]){
       correct++;
+      number_used[i] = true;
+      pot_vals_used[i] = true;
     }
-    else {
-      int idx = index(number, 4, pot_vals[i]);
-      if(idx != -1){
-        if(pot_vals[i] != number[i]){
-          wrong_place++;
-        } else wrong++;
-      } else wrong++;
+  }
+  // Then we check the others
+  for(int i = 0; i < 4; i++){
+    if(pot_vals_used[i]) continue;  // If already checked this one then skip it
+    bool found = false;             // To mark if wrong place found, if not then increase wrong
+    for(int j = 0; j < 4; j++){
+      if(!number_used[i] && pot_vals[i] == number[j]){
+        found = true;
+        number_used[j] = true;
+        pot_vals_used[i] = true;
+        wrong_place++;
+        break;
+      }
     }
+    if(!found) wrong++;
   }
   
   curr_round++;
 
 }
-
-int index(int arr[],int len, int num){
-  for(int i = 0; i < len; i++){
+int index(int arr[],int len, int num,int start){
+  for(int i = start; i < len; i++){
     if(arr[i] == num){
       return i;
     }
@@ -511,7 +500,7 @@ void set_major_mode(int mode){
 
 void get_pots() {  // Get values from potenciometers to an array
   for (int i = 0; i < 4; i++) {
-    pot_vals[i] = map(analogRead(pot_pins[i]), 0, 1023, 0, 9);
+    pot_vals[i] = map(analogRead(pot_pins[i]), 0, 1000, 0, 9);
     pot_string[i] = '0' + pot_vals[i];
   }
 }
@@ -520,7 +509,6 @@ void btn1_interrupt() {
   unsigned long curr_time = millis();
   if (curr_time - btn_last_int_time[0] > debounce_time) {
     button_pressed[0] = true;
-    Serial.println("BTN1_PRESSED");
   }
   btn_last_int_time[0] = curr_time;
 }
@@ -529,7 +517,6 @@ void btn2_interrupt() {
   unsigned long curr_time = millis();
   if (curr_time - btn_last_int_time[1] > debounce_time) {
     button_pressed[1] = true;
-    Serial.println("BTN2_PRESSED");
   }
   btn_last_int_time[1] = curr_time;
 }
