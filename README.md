@@ -22,7 +22,7 @@ The design of this game project is divided into four main parts, first we have t
 ## Schematics
 
 # Demo video
-
+https://github.com/user-attachments/assets/9735ea84-e28c-4d88-89e5-31461136434d
 # Encountered problems
 - Keeping track of what should be on the screen, i created 2 char arrays to hold the current text which gets constantly redrawn to the screen, for easier tracking
 - Using button interrupts, at first I put a lot of ifs inside my interrupts to handle the different cases for different menus and submenus, which was very time consuming for the interrupt and hard to manage, so I changed the code to handle everything inside the menus themselves
