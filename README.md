@@ -20,7 +20,7 @@ The design of this game project is divided into four main parts, first we have t
 ## Design
 ![Design](https://github.com/hyaqua/Robotika2/blob/main/Assets/design.jpg?raw=true)
 ## Schematics
-
+![Schematic](https://github.com/hyaqua/Robotika2/blob/main/Assets/Schematic.png?raw=true)
 # Demo video
 https://github.com/user-attachments/assets/9735ea84-e28c-4d88-89e5-31461136434d
 # Encountered problems
